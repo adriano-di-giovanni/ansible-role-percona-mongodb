@@ -1,0 +1,20 @@
+---
+percona_mongodb_archive: percona-server-mongodb-3.0.8-1.2-r97f91ef-trusty-x86_64-bundle.tar
+percona_mongodb_archive_url: https://www.percona.com/downloads/percona-server-mongodb/percona-server-mongodb-3.0.8-1.2/binary/debian/trusty/x86_64/{{ percona_mongodb_archive }}
+
+percona_mongodb_download_dir: '{{ ansible_env.HOME }}'
+percona_mongodb_download_file: '{{ percona_mongodb_download_dir }}/{{ percona_mongodb_archive }}'
+
+# I failed using with_fileglob or find from ansible because order of
+# installation matters
+# I decided to hardcode debian file names and their order here
+# *IMPORTANT* when you change percona_mongodb_download_file also change
+# percona_mongodb_deb_files accordingly
+# Side note: order doesn't matter when you run dpkg -i percona-server-mongodb*
+percona_mongodb_deb_files:
+  - '{{ percona_mongodb_download_dir }}/percona-server-mongodb-server_3.0.8-1.2.trusty_amd64.deb'
+  - '{{ percona_mongodb_download_dir }}/percona-server-mongodb-mongos_3.0.8-1.2.trusty_amd64.deb'
+  - '{{ percona_mongodb_download_dir }}/percona-server-mongodb-shell_3.0.8-1.2.trusty_amd64.deb'
+  - '{{ percona_mongodb_download_dir }}/percona-server-mongodb-tools_3.0.8-1.2.trusty_amd64.deb'
+  - '{{ percona_mongodb_download_dir }}/percona-server-mongodb_3.0.8-1.2.trusty_amd64.deb'
+  - '{{ percona_mongodb_download_dir }}/percona-server-mongodb-dbg_3.0.8-1.2.trusty_amd64.deb'

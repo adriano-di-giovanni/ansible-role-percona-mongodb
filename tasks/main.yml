@@ -1,0 +1,57 @@
+---
+- name: install dependencies
+  apt:
+    name: '{{ item }}'
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+  with_items:
+    - tar
+
+- name: check the download status
+  stat: path={{ percona_mongodb_download_file }}
+  register: percona_mongodb_download_check_result
+
+- name: download
+  get_url:
+    url: '{{ percona_mongodb_archive_url }}'
+    dest: '{{ percona_mongodb_download_dir }}'
+  register: percona_mongodb_download_result
+  when: not percona_mongodb_download_check_result.stat.exists
+
+- name: extract
+  unarchive:
+    src: '{{ percona_mongodb_download_file }}'
+    dest: '{{ percona_mongodb_download_dir }}'
+    copy: no
+  when: percona_mongodb_download_result | changed
+
+- name: install
+  apt:
+    deb: '{{ item }}'
+  with_items: '{{ percona_mongodb_deb_files }}'
+  when: percona_mongodb_download_result | changed
+
+- name: stop mongodb service
+  service:
+    name: mongod
+    state: stopped
+
+- name: configure mongodb
+  lineinfile:
+    dest: /etc/mongod.conf
+    line: |
+
+      storage:
+        engine: rocksdb
+      setParameter:
+        internalQueryExecYieldPeriodMS: 1000
+        internalQueryExecYieldIterations: 100000
+
+- name: empty /var/lib/mongodb
+  shell: rm -rf /var/lib/mongodb/*
+
+- name: start mongodb service
+  service:
+    name: mongod
+    state: started
